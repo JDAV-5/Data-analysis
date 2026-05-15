@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using ETLService.Security;
+using ETLService.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,7 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddSingleton<DbHelper>();
 
 // =============================
-// CONFIGURACIÓN JWT (CORREGIDA)
+// CONFIGURACIÓN JWT
 // =============================
 var keyString = builder.Configuration["JwtSettings:Key"];
 
@@ -48,7 +49,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key),
 
-        ClockSkew = TimeSpan.Zero //  evita tolerancia extra al expirar
+        ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -118,7 +119,10 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
-//  ORDEN CORRECTO
+//TRACKING 
+app.UseMiddleware<RequestTrackingMiddleware>();
+
+//AUTH
 app.UseAuthentication();
 app.UseAuthorization();
 
